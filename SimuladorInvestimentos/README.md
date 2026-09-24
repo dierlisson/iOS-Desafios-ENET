@@ -44,7 +44,16 @@ O app usa a composição verde e os cards claros da referência. O formulário e
 
 ## Screenshots
 
+### Modo Claro (Light Mode)
+
 | Tela Inicial (Boas-Vindas) | Formulário de Simulação | Resultado da Simulação |
 | :---: | :---: | :---: |
 | ![Boas-Vindas](Screenshots/welcome.png) | ![Formulário](Screenshots/form.png) | ![Resultado](Screenshots/result.png) |
+
+### Modo Escuro (Dark Mode)
+
+| Tela Inicial (Boas-Vindas) | Formulário de Simulação | Resultado da Simulação |
+| :---: | :---: | :---: |
+| ![Boas-Vindas Dark](Screenshots/welcome-dark.png) | ![Formulário Dark](Screenshots/form-dark.png) | ![Resultado Dark](Screenshots/result-dark.png) |
+
 
