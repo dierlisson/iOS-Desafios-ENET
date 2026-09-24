@@ -2,13 +2,14 @@ import SwiftUI
 
 public struct EventListView: View {
     @Bindable var viewModel: EventsViewModel
+    @State private var path = NavigationPath()
     
-    public init(viewModel: EventsViewModel) {
+    public init(viewModel: EventsViewModel = EventsViewModel()) {
         self.viewModel = viewModel
     }
     
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 // Horizontal Category Selector Chips
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -112,6 +113,9 @@ public struct EventListView: View {
             .task {
                 if viewModel.events.isEmpty {
                     await viewModel.loadEvents()
+                }
+                if ProcessInfo.processInfo.arguments.contains("--test-detail"), let firstEvent = viewModel.events.first {
+                    path.append(firstEvent)
                 }
             }
         }

@@ -26,8 +26,8 @@ public enum TransactionCategory: String, Codable, CaseIterable, Identifiable {
     public var iconName: String {
         switch self {
         case .salary: return "banknote.fill"
-        case .freelance: return "laptopcomputer"
-        case .investments: return "chart.line.uptrend.xyaxis"
+        case .freelance: return "chart.line.uptrend.xyaxis"
+        case .investments: return "briefcase.fill"
         case .food: return "fork.knife"
         case .housing: return "house.fill"
         case .transport: return "car.fill"
@@ -41,11 +41,11 @@ public enum TransactionCategory: String, Codable, CaseIterable, Identifiable {
     public var color: Color {
         switch self {
         case .salary: return .green
-        case .freelance: return .teal
-        case .investments: return .purple
+        case .freelance: return .purple
+        case .investments: return .teal
         case .food: return .orange
         case .housing: return .blue
-        case .transport: return .indigo
+        case .transport: return Color(red: 0.3, green: 0.45, blue: 0.95)
         case .leisure: return .pink
         case .health: return .red
         case .education: return .cyan

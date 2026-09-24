@@ -33,7 +33,7 @@ public struct PokemonDetailDTO: Codable, Sendable {
         "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(id).png"
     }
     
-    public func toDomain() -> PokemonDetail {
+    public func toDomain(speciesDescription: String? = nil) -> PokemonDetail {
         let domainTypes = types.compactMap { PokemonType(rawValue: $0.type.name.lowercased()) }
         let domainStats = stats.map { PokemonStat(name: $0.stat.name, value: $0.baseStat) }
         let domainAbilities = abilities.map { $0.ability.name.capitalized }
@@ -50,8 +50,47 @@ public struct PokemonDetailDTO: Codable, Sendable {
         return PokemonDetail(
             pokemon: pokemon,
             stats: domainStats,
-            abilities: domainAbilities
+            abilities: domainAbilities,
+            speciesDescription: speciesDescription
         )
+    }
+}
+
+public struct PokemonSpeciesDTO: Codable, Sendable {
+    public let flavorTextEntries: [FlavorTextEntryDTO]
+    
+    enum CodingKeys: String, CodingKey {
+        case flavorTextEntries = "flavor_text_entries"
+    }
+    
+    public var portugueseOrEnglishFlavorText: String? {
+        if let ptEntry = flavorTextEntries.first(where: { $0.language.name == "pt" || $0.language.name == "pt-BR" || $0.language.name.starts(with: "pt") }) {
+            return cleanFlavorText(ptEntry.flavorText)
+        }
+        if let enEntry = flavorTextEntries.first(where: { $0.language.name == "en" }) {
+            return cleanFlavorText(enEntry.flavorText)
+        }
+        if let anyEntry = flavorTextEntries.first {
+            return cleanFlavorText(anyEntry.flavorText)
+        }
+        return nil
+    }
+    
+    private func cleanFlavorText(_ text: String) -> String {
+        text.replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\u{0C}", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+public struct FlavorTextEntryDTO: Codable, Sendable {
+    public let flavorText: String
+    public let language: NamedResourceDTO
+    
+    enum CodingKeys: String, CodingKey {
+        case flavorText = "flavor_text"
+        case language
     }
 }
 
@@ -78,3 +117,4 @@ public struct NamedResourceDTO: Codable, Sendable {
     public let name: String
     public let url: String
 }
+

@@ -22,10 +22,15 @@ public struct PokemonCardView: View {
             .shadow(color: pokemon.primaryType.color.opacity(0.3), radius: 6, x: 0, y: 4)
             
             // Decorative background pokeball circle pattern
-            Circle()
-                .fill(Color.white.opacity(0.12))
-                .frame(width: 120, height: 120)
-                .offset(x: 50, y: 30)
+            ZStack {
+                Circle()
+                    .stroke(Color.white.opacity(0.15), lineWidth: 14)
+                    .frame(width: 130, height: 130)
+                Circle()
+                    .fill(Color.white.opacity(0.10))
+                    .frame(width: 95, height: 95)
+            }
+            .offset(x: 45, y: 25)
             
             VStack(alignment: .leading, spacing: 8) {
                 // Header: Name & ID Number
@@ -89,5 +94,16 @@ public struct PokemonCardView: View {
             .padding(14)
         }
         .frame(height: 125)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
+
+#Preview {
+    VStack(spacing: 14) {
+        PokemonCardView(pokemon: MockPokedexData.bulbasaur)
+        PokemonCardView(pokemon: MockPokedexData.charmander)
+    }
+    .padding()
+    .background(Color.appSystemGroupedBackground)
+}
+

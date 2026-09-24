@@ -16,6 +16,19 @@ public struct SimulationResultView: View {
         result.breakdown.filter { $0.month.isMultiple(of: 12) || $0.month == result.breakdown.last?.month }
     }
 
+    private var periodDescription: String {
+        let months = result.breakdown.count
+        if viewModel.periodType == .years && months % 12 == 0 {
+            let years = months / 12
+            return years == 1 ? "após 1 ano de investimento" : "após \(years) anos de investimento"
+        } else if months % 12 == 0 {
+            let years = months / 12
+            return years == 1 ? "após 1 ano (\(months) meses) de investimento" : "após \(years) anos (\(months) meses) de investimento"
+        } else {
+            return months == 1 ? "após 1 mês de investimento" : "após \(months) meses de investimento"
+        }
+    }
+
     public var body: some View {
         ScrollView {
             VStack(spacing: 22) {
@@ -27,7 +40,7 @@ public struct SimulationResultView: View {
                     Text(CurrencyFormatter.formatCurrency(result.totalAmount))
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
-                    Text("Após \(result.breakdown.count) meses de investimento")
+                    Text(periodDescription)
                         .font(.subheadline).foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -39,7 +52,7 @@ public struct SimulationResultView: View {
                     metric("Lucro obtido", value: result.totalProfit, icon: "chart.line.uptrend.xyaxis", color: .investmentTextGreen)
                 }
                 VStack(alignment: .leading, spacing: 16) {
-                    Label("Resumo por ano", systemImage: "list.bullet.rectangle")
+                    Label("Resumo por Ano", systemImage: "list.bullet.rectangle")
                         .font(.headline)
                         .accessibilityAddTraits(.isHeader)
                     ForEach(annualSummary) { item in
@@ -77,7 +90,7 @@ public struct SimulationResultView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.investmentBackground)
-        .navigationTitle("Resultado da simulação")
+        .navigationTitle("Resultado da Simulação")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -85,7 +98,7 @@ public struct SimulationResultView: View {
 
     private func metric(_ title: String, value: Double, icon: String, color: Color) -> some View {
         VStack(spacing: 12) {
-            Image(systemName: icon).font(.title3).foregroundStyle(color)
+            Image(systemName: icon).renderingMode(.template).font(.title3).foregroundStyle(color)
                 .padding(12).background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                 .accessibilityHidden(true)
             Text(title).font(.subheadline).foregroundStyle(.secondary)

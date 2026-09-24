@@ -20,6 +20,7 @@ let package = Package(
             exclude: [
                 "README.md",
                 "desafio-ios-controle-financeiro-detalhe.webp",
+                "Screenshots",
                 "ControleFinanceiroTests",
                 "ControleFinanceiroApp.swift"
             ],

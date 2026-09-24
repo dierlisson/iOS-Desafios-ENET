@@ -19,8 +19,16 @@ public final class EventsViewModel {
     private let service: EventServiceProtocol
     private let favoritesKey = "lista_eventos_favorite_ids"
     
-    public init(service: EventServiceProtocol = EventService()) {
+    public init(
+        service: EventServiceProtocol = EventService(),
+        initialCategory: EventCategory = .all,
+        initialSearchText: String = "",
+        initialSort: SortOption = .dateAsc
+    ) {
         self.service = service
+        self.selectedCategory = initialCategory
+        self.searchText = initialSearchText
+        self.selectedSort = initialSort
         loadFavorites()
     }
     

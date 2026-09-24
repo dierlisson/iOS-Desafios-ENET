@@ -18,6 +18,7 @@ let package = Package(
             name: "SimuladorInvestimentos",
             path: ".",
             exclude: [
+                "SimuladorInvestimentosApp.swift",
                 "SimuladorInvestimentosTests",
                 "README.md",
                 "VALIDACAO.md",
@@ -26,7 +27,6 @@ let package = Package(
                 "desafio-ios-simulador-investimentos-detalhe.webp"
             ],
             sources: [
-                "SimuladorInvestimentosApp.swift",
                 "Models",
                 "Services",
                 "ViewModels",

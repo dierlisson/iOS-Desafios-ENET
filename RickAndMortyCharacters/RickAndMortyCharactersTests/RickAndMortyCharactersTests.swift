@@ -4,7 +4,7 @@ import XCTest
 final class MockRickAndMortyService: RickAndMortyServiceProtocol {
     var shouldFail: Bool = false
     
-    func fetchCharacters(name: String?, status: RMStatus?, page: Int) async throws -> (characters: [RMCharacter], hasNextPage: Bool) {
+    func fetchCharacters(name: String?, status: RMStatus?, gender: RMGender?, page: Int) async throws -> (characters: [RMCharacter], hasNextPage: Bool) {
         if shouldFail {
             throw NetworkError.noConnection
         }
@@ -15,7 +15,7 @@ final class MockRickAndMortyService: RickAndMortyServiceProtocol {
             status: .alive,
             species: "Human",
             type: "",
-            gender: "Male",
+            gender: .male,
             origin: RMLocationRef(name: "Earth (C-137)", url: ""),
             location: RMLocationRef(name: "Citadel of Ricks", url: ""),
             image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
@@ -25,6 +25,14 @@ final class MockRickAndMortyService: RickAndMortyServiceProtocol {
         )
         
         if let name = name, !name.isEmpty, !sample.name.localizedCaseInsensitiveContains(name) {
+            return (characters: [], hasNextPage: false)
+        }
+        
+        if let status = status, status != sample.status {
+            return (characters: [], hasNextPage: false)
+        }
+        
+        if let gender = gender, gender != sample.gender {
             return (characters: [], hasNextPage: false)
         }
         
@@ -45,6 +53,41 @@ final class RickAndMortyCharactersTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertEqual(viewModel.characters.count, 1)
         XCTAssertEqual(viewModel.characters.first?.name, "Rick Sanchez")
+    }
+    
+    @MainActor
+    func testGenderFilterMatching() async {
+        let mockService = MockRickAndMortyService()
+        let viewModel = CharactersViewModel(service: mockService)
+        viewModel.selectedGender = .male
+        
+        await viewModel.resetAndLoad()
+        
+        XCTAssertEqual(viewModel.characters.count, 1)
+        XCTAssertEqual(viewModel.characters.first?.gender, .male)
+    }
+    
+    @MainActor
+    func testGenderFilterMismatchReturnsEmpty() async {
+        let mockService = MockRickAndMortyService()
+        let viewModel = CharactersViewModel(service: mockService)
+        viewModel.selectedGender = .female
+        
+        await viewModel.resetAndLoad()
+        
+        XCTAssertTrue(viewModel.characters.isEmpty)
+    }
+    
+    @MainActor
+    func testFavoritesToggle() {
+        let favoritesManager = FavoritesManager()
+        let characterId = 101
+        
+        XCTAssertFalse(favoritesManager.isFavorite(characterId))
+        favoritesManager.toggleFavorite(characterId)
+        XCTAssertTrue(favoritesManager.isFavorite(characterId))
+        favoritesManager.toggleFavorite(characterId)
+        XCTAssertFalse(favoritesManager.isFavorite(characterId))
     }
     
     @MainActor

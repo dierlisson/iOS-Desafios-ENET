@@ -36,4 +36,16 @@ extension Color {
         return Color.gray.opacity(0.08)
         #endif
     }
+    
+    public static var portalGreen: Color {
+        return Color(red: 0.18, green: 0.80, blue: 0.44)
+    }
+    
+    public static var accentTeal: Color {
+        return Color(red: 0.16, green: 0.72, blue: 0.65)
+    }
+    
+    public static var favoriteRed: Color {
+        return Color(red: 0.94, green: 0.27, blue: 0.35)
+    }
 }

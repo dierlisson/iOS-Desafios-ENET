@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct PokedexListView: View {
     @State public var viewModel = PokedexViewModel()
+    @State private var selectedPokemon: Pokemon? = nil
     
     private let columns = [
         GridItem(.flexible(), spacing: 14),
@@ -97,7 +98,9 @@ public struct PokedexListView: View {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 14) {
                                 ForEach(viewModel.filteredPokemons) { pokemon in
-                                    NavigationLink(destination: PokemonDetailView(pokemon: pokemon, viewModel: viewModel)) {
+                                    Button(action: {
+                                        selectedPokemon = pokemon
+                                    }) {
                                         PokemonCardView(pokemon: pokemon)
                                     }
                                     .buttonStyle(.plain)
@@ -132,7 +135,19 @@ public struct PokedexListView: View {
             .navigationBarTitleDisplayMode(.large)
             #endif
             .searchable(text: $viewModel.searchText, prompt: "Buscar por nome ou ID (#001)...")
+            .navigationDestination(item: $selectedPokemon) { pokemon in
+                PokemonDetailView(pokemon: pokemon, viewModel: viewModel)
+            }
             .task {
+                let args = ProcessInfo.processInfo.arguments
+                if args.contains("--detail-bulbasaur") {
+                    selectedPokemon = MockPokedexData.bulbasaur
+                } else if args.contains("--detail-pikachu") {
+                    selectedPokemon = MockPokedexData.pikachu
+                } else if args.contains("--filter-fogo") {
+                    viewModel.selectTypeFilter(.fire)
+                }
+                
                 if viewModel.pokemons.isEmpty {
                     await viewModel.loadInitialPokemons()
                 }
@@ -140,3 +155,13 @@ public struct PokedexListView: View {
         }
     }
 }
+
+
+
+#Preview {
+    let mockVM = PokedexViewModel(service: MockPokedexService())
+    return PokedexListView(viewModel: mockVM)
+}
+
+
+

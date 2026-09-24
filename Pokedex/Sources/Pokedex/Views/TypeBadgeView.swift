@@ -22,3 +22,13 @@ public struct TypeBadgeView: View {
         .shadow(color: type.color.opacity(0.4), radius: 3, x: 0, y: 2)
     }
 }
+
+#Preview {
+    HStack(spacing: 8) {
+        TypeBadgeView(type: .grass)
+        TypeBadgeView(type: .fire)
+        TypeBadgeView(type: .water)
+    }
+    .padding()
+}
+

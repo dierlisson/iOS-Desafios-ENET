@@ -25,6 +25,53 @@ public enum RMStatus: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+public enum RMGender: String, Codable, CaseIterable, Identifiable {
+    case female = "Female"
+    case male = "Male"
+    case genderless = "Genderless"
+    case unknown = "unknown"
+    
+    public var id: String { rawValue }
+    
+    public var localizedName: String {
+        switch self {
+        case .female: return "Feminino"
+        case .male: return "Masculino"
+        case .genderless: return "Sem gênero"
+        case .unknown: return "Desconhecido"
+        }
+    }
+    
+    public var color: Color {
+        switch self {
+        case .female: return .pink
+        case .male: return .blue
+        case .genderless: return .purple
+        case .unknown: return .orange
+        }
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        switch rawValue.lowercased() {
+        case "female":
+            self = .female
+        case "male":
+            self = .male
+        case "genderless":
+            self = .genderless
+        default:
+            self = .unknown
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
+
 public struct RMLocationRef: Codable, Hashable {
     public let name: String
     public let url: String
@@ -53,7 +100,7 @@ public struct RMCharacter: Identifiable, Codable, Hashable {
     public let status: RMStatus
     public let species: String
     public let type: String
-    public let gender: String
+    public let gender: RMGender
     public let origin: RMLocationRef
     public let location: RMLocationRef
     public let image: String
@@ -67,7 +114,7 @@ public struct RMCharacter: Identifiable, Codable, Hashable {
         status: RMStatus,
         species: String,
         type: String,
-        gender: String,
+        gender: RMGender,
         origin: RMLocationRef,
         location: RMLocationRef,
         image: String,

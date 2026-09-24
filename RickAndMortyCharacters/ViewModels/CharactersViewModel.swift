@@ -17,6 +17,20 @@ public final class CharactersViewModel {
             }
         }
     }
+    public var selectedGender: RMGender? = nil {
+        didSet {
+            Task { @MainActor in
+                await resetAndLoad()
+            }
+        }
+    }
+    public var showOnlyFavorites: Bool = false {
+        didSet {
+            Task { @MainActor in
+                await resetAndLoad()
+            }
+        }
+    }
     
     public var isLoading: Bool = false
     public var isLoadingNextPage: Bool = false
@@ -24,11 +38,16 @@ public final class CharactersViewModel {
     public var currentPage: Int = 1
     public var hasNextPage: Bool = true
     
+    public let favoritesManager: FavoritesManager
     private let service: RickAndMortyServiceProtocol
     private var searchTask: Task<Void, Never>?
     
-    public init(service: RickAndMortyServiceProtocol = RickAndMortyService()) {
+    public init(
+        service: RickAndMortyServiceProtocol = RickAndMortyService(),
+        favoritesManager: FavoritesManager = .shared
+    ) {
         self.service = service
+        self.favoritesManager = favoritesManager
     }
     
     @MainActor
@@ -49,10 +68,15 @@ public final class CharactersViewModel {
             let result = try await service.fetchCharacters(
                 name: searchText.isEmpty ? nil : searchText,
                 status: selectedStatus,
+                gender: selectedGender,
                 page: 1
             )
-            characters = result.characters
-            hasNextPage = result.hasNextPage
+            var fetched = result.characters
+            if showOnlyFavorites {
+                fetched = fetched.filter { favoritesManager.isFavorite($0.id) }
+            }
+            characters = fetched
+            hasNextPage = showOnlyFavorites ? false : result.hasNextPage
         } catch {
             errorMessage = error.localizedDescription
             characters = []
@@ -63,7 +87,7 @@ public final class CharactersViewModel {
     
     @MainActor
     public func loadNextPage() async {
-        guard !isLoading, !isLoadingNextPage, hasNextPage else { return }
+        guard !isLoading, !isLoadingNextPage, hasNextPage, !showOnlyFavorites else { return }
         
         isLoadingNextPage = true
         let nextPage = currentPage + 1
@@ -72,6 +96,7 @@ public final class CharactersViewModel {
             let result = try await service.fetchCharacters(
                 name: searchText.isEmpty ? nil : searchText,
                 status: selectedStatus,
+                gender: selectedGender,
                 page: nextPage
             )
             currentPage = nextPage

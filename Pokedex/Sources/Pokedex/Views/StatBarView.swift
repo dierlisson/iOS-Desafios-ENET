@@ -3,6 +3,7 @@ import SwiftUI
 public struct StatBarView: View {
     public let stat: PokemonStat
     public let typeColor: Color
+    @State private var animatedRatio: Double = 0.0
     
     public init(stat: PokemonStat, typeColor: Color) {
         self.stat = stat
@@ -35,11 +36,25 @@ public struct StatBarView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: geometry.size.width * stat.progressRatio, height: 8)
+                        .frame(width: max(0, geometry.size.width * animatedRatio), height: 8)
                 }
             }
             .frame(height: 8)
         }
         .padding(.vertical, 4)
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6)) {
+                animatedRatio = stat.progressRatio
+            }
+        }
     }
 }
+
+#Preview {
+    VStack(spacing: 8) {
+        StatBarView(stat: PokemonStat(name: "hp", value: 45), typeColor: PokemonType.grass.color)
+        StatBarView(stat: PokemonStat(name: "attack", value: 120), typeColor: PokemonType.fire.color)
+    }
+    .padding()
+}
+

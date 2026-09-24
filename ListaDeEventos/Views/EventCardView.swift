@@ -72,7 +72,7 @@ public struct EventCardView: View {
             Divider()
             
             // Footer Info: Date & Location
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 HStack(spacing: 5) {
                     Image(systemName: "calendar")
                         .font(.caption)
@@ -80,6 +80,18 @@ public struct EventCardView: View {
                     Text(event.date.formattedEventDate)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    
+                    if let relativeBadge = event.date.relativeBadgeText {
+                        Text(relativeBadge)
+                            .font(.caption2.bold())
+                            .foregroundStyle(relativeBadge == "Hoje" ? Color.green : Color.orange)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                (relativeBadge == "Hoje" ? Color.green : Color.orange).opacity(0.15),
+                                in: Capsule()
+                            )
+                    }
                 }
                 
                 Spacer()

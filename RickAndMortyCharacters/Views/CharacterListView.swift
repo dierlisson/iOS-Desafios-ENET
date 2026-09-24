@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct CharacterListView: View {
     @Bindable var viewModel: CharactersViewModel
+    @State private var showFiltersSheet: Bool = false
     
     private let columns = [
         GridItem(.adaptive(minimum: 160), spacing: 16)
@@ -14,30 +15,57 @@ public struct CharacterListView: View {
     public var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Status Filters Bar
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        StatusChip(
-                            title: "Todos",
-                            color: .blue,
-                            isSelected: viewModel.selectedStatus == nil
-                        ) {
-                            viewModel.selectedStatus = nil
-                        }
-                        
-                        ForEach(RMStatus.allCases) { status in
-                            StatusChip(
-                                title: status.localizedName,
-                                color: status.color,
-                                isSelected: viewModel.selectedStatus == status
+                // Filters Header Section
+                VStack(alignment: .leading, spacing: 8) {
+                    // Status Filter Scroll
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            FilterChip(
+                                title: "Todos Status",
+                                color: .blue,
+                                isSelected: viewModel.selectedStatus == nil
                             ) {
-                                viewModel.selectedStatus = status
+                                viewModel.selectedStatus = nil
+                            }
+                            
+                            ForEach(RMStatus.allCases) { status in
+                                FilterChip(
+                                    title: status.localizedName,
+                                    color: status.color,
+                                    isSelected: viewModel.selectedStatus == status
+                                ) {
+                                    viewModel.selectedStatus = status
+                                }
                             }
                         }
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    
+                    // Gender Filter Scroll
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            FilterChip(
+                                title: "Todos Gêneros",
+                                color: .purple,
+                                isSelected: viewModel.selectedGender == nil
+                            ) {
+                                viewModel.selectedGender = nil
+                            }
+                            
+                            ForEach(RMGender.allCases) { gender in
+                                FilterChip(
+                                    title: gender.localizedName,
+                                    color: gender.color,
+                                    isSelected: viewModel.selectedGender == gender
+                                ) {
+                                    viewModel.selectedGender = gender
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
                 }
+                .padding(.vertical, 8)
                 .background(Color.customSystemBackground)
                 
                 Divider()
@@ -70,16 +98,23 @@ public struct CharacterListView: View {
                         }
                     } else if viewModel.characters.isEmpty {
                         ContentUnavailableView {
-                            Label("Nenhum Personagem Encontrado", systemImage: "person.slash.fill")
+                            Label(
+                                viewModel.showOnlyFavorites ? "Nenhum Favorito Encontrado" : "Nenhum Personagem Encontrado",
+                                systemImage: viewModel.showOnlyFavorites ? "heart.slash.fill" : "person.slash.fill"
+                            )
                         } description: {
-                            Text("Tente buscar por outro nome ou alterar o filtro de status.")
+                            Text(
+                                viewModel.showOnlyFavorites
+                                ? "Toque no ícone de coração nos cards para adicionar personagens aos favoritos."
+                                : "Tente buscar por outro nome ou alterar os filtros de status e gênero."
+                            )
                         }
                     } else {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 16) {
                                 ForEach(viewModel.characters) { character in
                                     NavigationLink(value: character) {
-                                        CharacterCardView(character: character)
+                                        CharacterCardView(character: character, favoritesManager: viewModel.favoritesManager)
                                     }
                                     .buttonStyle(.plain)
                                     .onAppear {
@@ -103,7 +138,21 @@ public struct CharacterListView: View {
             }
             .navigationTitle("Rick & Morty")
             .navigationDestination(for: RMCharacter.self) { character in
-                CharacterDetailView(character: character)
+                CharacterDetailView(character: character, favoritesManager: viewModel.favoritesManager)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            viewModel.showOnlyFavorites.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: viewModel.showOnlyFavorites ? "heart.fill" : "heart")
+                                .foregroundStyle(viewModel.showOnlyFavorites ? Color.favoriteRed : .primary)
+                        }
+                    }
+                }
             }
             .searchable(
                 text: $viewModel.searchText,
@@ -116,7 +165,7 @@ public struct CharacterListView: View {
     }
 }
 
-private struct StatusChip: View {
+private struct FilterChip: View {
     let title: String
     let color: Color
     let isSelected: Bool
@@ -129,11 +178,11 @@ private struct StatusChip: View {
                     .fill(color)
                     .frame(width: 8, height: 8)
                 Text(title)
-                    .font(.subheadline.weight(isSelected ? .bold : .regular))
+                    .font(.caption.weight(isSelected ? .bold : .medium))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(isSelected ? color.opacity(0.2) : Color.primary.opacity(0.06), in: Capsule())
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(isSelected ? color.opacity(0.18) : Color.primary.opacity(0.05), in: Capsule())
             .foregroundStyle(isSelected ? color : .primary)
             .overlay(
                 Capsule()

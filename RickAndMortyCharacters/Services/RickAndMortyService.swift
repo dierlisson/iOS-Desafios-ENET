@@ -24,7 +24,13 @@ public enum NetworkError: LocalizedError, Equatable {
 }
 
 public protocol RickAndMortyServiceProtocol {
-    func fetchCharacters(name: String?, status: RMStatus?, page: Int) async throws -> (characters: [RMCharacter], hasNextPage: Bool)
+    func fetchCharacters(name: String?, status: RMStatus?, gender: RMGender?, page: Int) async throws -> (characters: [RMCharacter], hasNextPage: Bool)
+}
+
+public extension RickAndMortyServiceProtocol {
+    func fetchCharacters(name: String? = nil, status: RMStatus? = nil, page: Int = 1) async throws -> (characters: [RMCharacter], hasNextPage: Bool) {
+        try await fetchCharacters(name: name, status: status, gender: nil, page: page)
+    }
 }
 
 public final class RickAndMortyService: RickAndMortyServiceProtocol {
@@ -35,7 +41,7 @@ public final class RickAndMortyService: RickAndMortyServiceProtocol {
         self.session = session
     }
     
-    public func fetchCharacters(name: String? = nil, status: RMStatus? = nil, page: Int = 1) async throws -> (characters: [RMCharacter], hasNextPage: Bool) {
+    public func fetchCharacters(name: String? = nil, status: RMStatus? = nil, gender: RMGender? = nil, page: Int = 1) async throws -> (characters: [RMCharacter], hasNextPage: Bool) {
         var components = URLComponents(string: baseURL)
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "page", value: String(page))
@@ -47,6 +53,10 @@ public final class RickAndMortyService: RickAndMortyServiceProtocol {
         
         if let status = status {
             queryItems.append(URLQueryItem(name: "status", value: status.rawValue))
+        }
+        
+        if let gender = gender {
+            queryItems.append(URLQueryItem(name: "gender", value: gender.rawValue))
         }
         
         components?.queryItems = queryItems

@@ -13,7 +13,7 @@ public struct SimulationFormView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Configure sua simulação").font(.title2.bold())
+                    Text("Configure sua Simulação").font(.title2.bold())
                         .accessibilityAddTraits(.isHeader)
                     Text("Preencha os dados para calcular sua projeção.")
                         .foregroundStyle(.secondary)
@@ -23,19 +23,19 @@ public struct SimulationFormView: View {
                       help: "Valor que você já possui para investir", field: .initial)
                 input("Aporte mensal", icon: "calendar", color: .blue,
                       text: $viewModel.monthlyContributionString, prefix: "R$", suffix: nil,
-                      help: "Valor depositado ao final de cada mês", field: .monthly)
+                      help: "Valor que você investirá todo mês", field: .monthly)
                 input("Taxa de juros (% ao ano)", icon: "percent", color: .orange,
                       text: $viewModel.annualRateString, prefix: nil, suffix: "%",
-                      help: "Taxa anual esperada para o investimento", field: .rate)
+                      help: "Taxa anual esperada (ex: CDI, Tesouro Direto)", field: .rate)
                 Text(viewModel.numberInputHelp)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 12) {
-                    input("Tempo de investimento", icon: "clock.fill", color: .purple,
+                    input("Tempo (\(viewModel.periodType.rawValue.lowercased()))", icon: "clock.fill", color: .purple,
                           text: $viewModel.periodValueString, prefix: nil,
                           suffix: viewModel.periodType.rawValue.lowercased(),
-                          help: "Período de até 50 anos (600 meses)", field: .period)
+                          help: "Por quanto tempo você quer investir", field: .period)
                     Picker("Unidade do período", selection: $viewModel.periodType) {
                         ForEach(PeriodType.allCases) { Text($0.rawValue).tag($0) }
                     }

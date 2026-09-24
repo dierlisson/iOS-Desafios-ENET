@@ -4,6 +4,9 @@ public struct TechEventDetailView: View {
     public let event: TechEvent
     public let onToggleBookmark: () -> Void
     
+    @State private var isShowingRegistrationAlert = false
+    @State private var isRegistered = false
+    
     public init(event: TechEvent, onToggleBookmark: @escaping () -> Void) {
         self.event = event
         self.onToggleBookmark = onToggleBookmark
@@ -13,12 +16,29 @@ public struct TechEventDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 ZStack(alignment: .bottomLeading) {
+                    if let bannerUrl = event.bannerUrl, let url = URL(string: bannerUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 220)
+                                    .clipped()
+                            default:
+                                defaultHeaderBackground
+                            }
+                        }
+                    } else {
+                        defaultHeaderBackground
+                    }
+                    
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.9)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [.clear, .black.opacity(0.75)],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    .frame(height: 200)
+                    .frame(height: 220)
                     
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -50,6 +70,8 @@ public struct TechEventDetailView: View {
                     }
                     .padding(16)
                 }
+                .frame(height: 220)
+                .clipped()
                 
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(spacing: 16) {
@@ -108,10 +130,21 @@ public struct TechEventDetailView: View {
                             
                             ForEach(event.speakers) { speaker in
                                 HStack(spacing: 14) {
-                                    Image(systemName: "person.crop.circle.fill")
-                                        .resizable()
-                                        .frame(width: 44, height: 44)
-                                        .foregroundColor(.blue.opacity(0.8))
+                                    if let avatarUrl = speaker.avatarUrl, let url = URL(string: avatarUrl) {
+                                        AsyncImage(url: url) { phase in
+                                            if let image = phase.image {
+                                                image
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(width: 44, height: 44)
+                                                    .clipShape(Circle())
+                                            } else {
+                                                speakerPlaceholder
+                                            }
+                                        }
+                                    } else {
+                                        speakerPlaceholder
+                                    }
                                     
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(speaker.name)
@@ -152,18 +185,23 @@ public struct TechEventDetailView: View {
                     }
                     
                     Button {
+                        isShowingRegistrationAlert = true
                     } label: {
                         HStack {
                             Spacer()
-                            Text(event.isFree ? "Inscrever-se Gratuitamente" : "Garantir Ingresso")
-                                .fontWeight(.bold)
+                            Label(
+                                isRegistered ? "Inscrição Confirmada ✓" : (event.isFree ? "Inscrever-se Gratuitamente" : "Garantir Ingresso"),
+                                systemImage: isRegistered ? "checkmark.circle.fill" : "ticket.fill"
+                            )
+                            .fontWeight(.bold)
                             Spacer()
                         }
                         .padding()
-                        .background(Color.blue)
+                        .background(isRegistered ? Color.green : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(12)
                     }
+                    .disabled(isRegistered)
                     .padding(.top, 10)
                 }
                 .padding(.horizontal)
@@ -181,5 +219,29 @@ public struct TechEventDetailView: View {
                 }
             }
         }
+        .alert("Confirmação de Inscrição", isPresented: $isShowingRegistrationAlert) {
+            Button("Confirmar") {
+                isRegistered = true
+            }
+            Button("Cancelar", role: .cancel) {}
+        } message: {
+            Text("Deseja confirmar sua participação no evento \"\(event.title)\"?")
+        }
+    }
+    
+    private var defaultHeaderBackground: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.9)]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .frame(height: 220)
+    }
+    
+    private var speakerPlaceholder: some View {
+        Image(systemName: "person.crop.circle.fill")
+            .resizable()
+            .frame(width: 44, height: 44)
+            .foregroundColor(.blue.opacity(0.8))
     }
 }

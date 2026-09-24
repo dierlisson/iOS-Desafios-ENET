@@ -56,4 +56,30 @@ final class ControleFinanceiroTests: XCTestCase {
         XCTAssertEqual(totalExpense, 1500.0)
         XCTAssertEqual(netBalance, 3500.0)
     }
+    
+    func testCurrencyFormatterFormattingAndParsing() {
+        let formatted = CurrencyFormatter.format(1250.50)
+        XCTAssertTrue(formatted.contains("1.250,50") || formatted.contains("1250,50"))
+        
+        let parsedStandard = CurrencyFormatter.parse("1250.50")
+        XCTAssertEqual(parsedStandard, 1250.50)
+        
+        let parsedBRL = CurrencyFormatter.parse("1.250,50")
+        XCTAssertEqual(parsedBRL, 1250.50)
+        
+        let parsedWithSymbol = CurrencyFormatter.parse("R$ 9.250,00")
+        XCTAssertEqual(parsedWithSymbol, 9250.00)
+    }
+    
+    func testSampleDataGeneration() {
+        let now = Date()
+        let samples = FinancialTransaction.sampleTransactions(for: now)
+        XCTAssertEqual(samples.count, 5)
+        
+        let incomes = samples.filter { $0.type == .income }
+        let expenses = samples.filter { $0.type == .expense }
+        
+        XCTAssertEqual(incomes.count, 2)
+        XCTAssertEqual(expenses.count, 3)
+    }
 }

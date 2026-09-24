@@ -23,16 +23,32 @@ public struct PokemonDetailView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
-                    .frame(height: 280)
+                    .frame(height: 290)
                     .clipShape(
                         UnevenRoundedRectangle(bottomLeadingRadius: 36, bottomTrailingRadius: 36)
                     )
                     
-                    VStack(alignment: .leading, spacing: 6) {
+                    // Pokeball watermark background
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 24)
+                            .frame(width: 240, height: 240)
+                        Circle()
+                            .fill(Color.white.opacity(0.10))
+                            .frame(width: 170, height: 170)
+                    }
+                    .offset(x: 140, y: 10)
+                    
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text(pokemon.displayName)
-                                .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+                            Button(action: { dismiss() }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.title3.bold())
+                                    .foregroundColor(.white)
+                                    .padding(8)
+                                    .background(Color.black.opacity(0.2))
+                                    .clipShape(Circle())
+                            }
                             
                             Spacer()
                             
@@ -41,6 +57,10 @@ public struct PokemonDetailView: View {
                                 .foregroundColor(Color.white.opacity(0.85))
                         }
                         
+                        Text(pokemon.displayName)
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(.white)
+                        
                         HStack(spacing: 8) {
                             ForEach(pokemon.types) { type in
                                 TypeBadgeView(type: type)
@@ -48,7 +68,7 @@ public struct PokemonDetailView: View {
                         }
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 16)
+                    .padding(.top, 50)
                     
                     // Center Hero Image
                     VStack {
@@ -176,9 +196,18 @@ public struct PokemonDetailView: View {
             }
         }
         .ignoresSafeArea(edges: .top)
+        .navigationBarBackButtonHidden(true)
         .task {
             await viewModel.fetchDetail(for: pokemon)
         }
     }
 }
+
+
+
+#Preview {
+    let mockVM = PokedexViewModel(service: MockPokedexService())
+    return PokemonDetailView(pokemon: MockPokedexData.bulbasaur, viewModel: mockVM)
+}
+
 

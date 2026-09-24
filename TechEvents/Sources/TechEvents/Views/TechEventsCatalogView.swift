@@ -76,6 +76,7 @@ public struct TechEventsCatalogView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
+                            .animation(.easeInOut(duration: 0.25), value: viewModel.filteredEvents)
                             .padding()
                         }
                         .refreshable {
@@ -123,9 +124,31 @@ public struct TechEventsCatalogView: View {
                     }
                 )
             }
+            .navigationDestination(item: $viewModel.selectedEvent) { event in
+                TechEventDetailView(
+                    event: event,
+                    onToggleBookmark: {
+                        Task {
+                            await viewModel.toggleBookmark(for: event)
+                        }
+                    }
+                )
+            }
             .task {
                 if viewModel.events.isEmpty {
                     await viewModel.loadEvents()
+                }
+                let args = ProcessInfo.processInfo.arguments
+                if args.contains("-UITest_ShowFilter") {
+                    viewModel.filterState.selectedFormat = .presencial
+                    viewModel.filterState.onlyFree = true
+                    viewModel.applyFilter()
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                    viewModel.isFilterSheetPresented = true
+                } else if args.contains("-UITest_ShowDetail") {
+                    if let first = viewModel.filteredEvents.first {
+                        viewModel.selectedEvent = first
+                    }
                 }
             }
         }

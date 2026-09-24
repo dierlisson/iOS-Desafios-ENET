@@ -5,8 +5,8 @@ public struct FinanceDashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \FinancialTransaction.date, order: .reverse) private var allTransactions: [FinancialTransaction]
     
-    @State private var showingAddSheet: Bool = false
-    @State private var selectedFilterCategory: String = "Todas"
+    @State private var showingAddSheet: Bool = ProcessInfo.processInfo.environment["OPEN_ADD_SHEET"] == "1"
+    @State private var selectedFilterCategory: String = ProcessInfo.processInfo.environment["CATEGORY_FILTER"] ?? "Todas"
     @State private var selectedMonthDate: Date = Date()
     
     public init() {}
@@ -196,13 +196,28 @@ public struct FinanceDashboardView: View {
                     Button {
                         showingAddSheet = true
                     } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3)
+                        Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+                            .background(Color.black, in: Circle())
                     }
                 }
             }
             .sheet(isPresented: $showingAddSheet) {
                 AddTransactionView()
+            }
+            .onAppear {
+                seedInitialDataIfNeeded()
+            }
+        }
+    }
+    
+    private func seedInitialDataIfNeeded() {
+        if allTransactions.isEmpty {
+            let samples = FinancialTransaction.sampleTransactions(for: selectedMonthDate)
+            for sample in samples {
+                modelContext.insert(sample)
             }
         }
     }

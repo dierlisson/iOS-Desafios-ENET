@@ -35,8 +35,8 @@ public struct WelcomeView: View {
                             .background(Color.investmentGreen.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                             .accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Simulação inteligente").font(.headline)
-                            Text("Calcule sua projeção e acompanhe a evolução do investimento ao longo do tempo.")
+                            Text("Simulação Inteligente").font(.headline)
+                            Text("Calcule projeções precisas com juros compostos.")
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
                     }

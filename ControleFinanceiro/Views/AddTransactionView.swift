@@ -71,13 +71,24 @@ public struct AddTransactionView: View {
                     Button("Cancelar") {
                         dismiss()
                     }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.customSecondarySystemGroupedBackground, in: Capsule())
+                    .overlay(Capsule().stroke(Color.primary.opacity(0.08), lineWidth: 1))
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Salvar") {
                         saveTransaction()
                     }
-                    .bold()
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(Color.customSecondarySystemGroupedBackground, in: Capsule())
+                    .overlay(Capsule().stroke(Color.primary.opacity(0.08), lineWidth: 1))
                 }
             }
             .alert("Atenção", isPresented: $showAlert) {
@@ -96,9 +107,8 @@ public struct AddTransactionView: View {
             return
         }
         
-        let cleanedAmount = amountString.replacingOccurrences(of: ",", with: ".")
-        guard let parsedAmount = Double(cleanedAmount), parsedAmount > 0, parsedAmount.isFinite else {
-            alertMessage = "Por favor, informe um valor válido maior que zero."
+        guard let parsedAmount = CurrencyFormatter.parse(amountString), parsedAmount > 0, parsedAmount.isFinite else {
+            alertMessage = "Por favor, informe um valor válido maior que zero (ex: 150,50)."
             showAlert = true
             return
         }

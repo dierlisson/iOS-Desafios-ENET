@@ -54,6 +54,21 @@ public final class PokedexService: PokedexServiceProtocol, @unchecked Sendable {
         }
         
         let detailDTO = try JSONDecoder().decode(PokemonDetailDTO.self, from: data)
-        return detailDTO.toDomain()
+        
+        var speciesDescription: String? = nil
+        if let speciesURL = URL(string: "\(baseURL)/pokemon-species/\(detailDTO.id)") {
+            do {
+                let (speciesData, speciesResponse) = try await session.data(from: speciesURL)
+                if let httpSpeciesResp = speciesResponse as? HTTPURLResponse, (200...299).contains(httpSpeciesResp.statusCode) {
+                    let speciesDTO = try JSONDecoder().decode(PokemonSpeciesDTO.self, from: speciesData)
+                    speciesDescription = speciesDTO.portugueseOrEnglishFlavorText
+                }
+            } catch {
+                // Silently fallback if species description call fails
+            }
+        }
+        
+        return detailDTO.toDomain(speciesDescription: speciesDescription)
     }
 }
+
