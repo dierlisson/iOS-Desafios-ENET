@@ -14,9 +14,9 @@ O aplicativo permite explorar todos os personagens da franquia Rick & Morty cons
 
 ## 📱 Screenshots
 
-| Lista de Personagens | Detalhes do Personagem |
-| :---: | :---: |
-| ![Lista de Personagens](Screenshots/list.png) | ![Detalhes do Personagem](Screenshots/detail.png) |
+| Lista de Personagens | Detalhes do Personagem | Personagens Favoritos |
+| :---: | :---: | :---: |
+| ![Lista de Personagens](Screenshots/list.png) | ![Detalhes do Personagem](Screenshots/detail.png) | ![Personagens Favoritos](Screenshots/favorites.png) |
 
 ---
 
@@ -26,7 +26,7 @@ O aplicativo permite explorar todos os personagens da franquia Rick & Morty cons
 - **Compatibilidade**: `iOS 17+`
 - **Networking**: `URLSession`, `async/await`, `JSONDecoder`
 - **API**: [Rick and Morty API](https://rickandmortyapi.com)
-- **Gerenciamento de Estado**: Macro `@Observable` (`CharactersViewModel`)
+- **Gerenciamento de Estado**: Macro `@Observable` (`CharactersViewModel`, `FavoritesManager`)
 - **Arquitetura**: MVVM com desacoplamento via `RickAndMortyServiceProtocol`
 - **Testes Unitários**: XCTest com mock service em `RickAndMortyCharactersTests` (100% dos testes aprovados)
 
@@ -36,9 +36,10 @@ O aplicativo permite explorar todos os personagens da franquia Rick & Morty cons
 
 - Listagem em grid responsivo de personagens com imagem, nome, status e espécie.
 - Busca por nome com **debounce de 400ms** para evitar chamadas excessivas.
-- Chips horizontais de filtro de status (Vivo, Morto, Desconhecido).
+- Chips horizontais de filtro por **Status** (Vivo, Morto, Desconhecido) e por **Gênero** (Feminino, Masculino, Sem gênero, Desconhecido).
+- Gerenciamento de **Favoritos** com botão de coração interativo, filtro exclusivo e persistência local via `UserDefaults`.
 - Paginação automática (infinite scrolling) conforme o usuário chega ao fim da lista.
-- Tela de detalhes do personagem com imagem em alta resolução e informações completas.
+- Tela de detalhes do personagem com imagem em alta resolução, badges e informações completas.
 - Tratamento visual de erros (sem conexão, erro no servidor) com botão de "Tentar Novamente".
 
 ---
