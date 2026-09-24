@@ -11,7 +11,7 @@ Consolidar arquitetura do app em Swift com casos de uso, repositório e apresent
 
 | Catálogo de Eventos | Detalhes & Programação | Filtros Compostos |
 | :---: | :---: | :---: |
-| ![Catálogo](Screenshots/catalog.png) | ![Detalhes](Screenshots/detail.png) | ![Filtros](Screenshots/filter.png) |
+| <img src="Screenshots/catalog.png" width="280" alt="Catálogo de Eventos" /> | <img src="Screenshots/detail.png" width="280" alt="Detalhes e Programação" /> | <img src="Screenshots/filter.png" width="280" alt="Filtros Compostos" /> |
 
 ## 🛠️ Tecnologias e Práticas
 - `Swift 5 / 6`
@@ -22,13 +22,13 @@ Consolidar arquitetura do app em Swift com casos de uso, repositório e apresent
 - `Separação domínio/dados`
 - `Busca e filtros compostos`
 - `Gestão de estado da UI`
-- `XCTest (16 unit tests passing)`
+- `XCTest (18 unit tests passing)`
 
 ## ✅ Requisitos para entrega
 - Catálogo de eventos com filtros múltiplos (Formato: Presencial/Online/Híbrido; Modalidade: Conferência/Meetup/Hackathon/Workshop; Apenas Gratuitos; Apenas Favoritos; Busca textual).
 - Estados vazios, carregamento e mensagens contextuais.
 - Camada de dados desacoplada da UI com repositórios local e remoto mockado.
-- Cobertura de fluxo principal com 16 testes unitários no XCTest.
+- Cobertura de fluxo principal com 18 testes unitários no XCTest.
 
 ---
 
