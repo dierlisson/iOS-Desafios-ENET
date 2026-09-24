@@ -1,6 +1,6 @@
 # 3️⃣ Controle Financeiro
 
-**Nível:** Intermediário 🟡 | **Diretório:** `/ControleFinanceiro` | **Status:** ✅ Concluído
+**Nível:** Intermediário 🟡 | **Diretório:** `/ControleFinanceiro` | **Status:** ✅ Concluído (SwiftData + iOS 17+)
 
 Sistema completo de controle de receitas e despesas pessoais com **SwiftData**, visualização de saldo mensal e filtros por categoria e período em SwiftUI.
 
