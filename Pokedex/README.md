@@ -9,9 +9,10 @@ Entregar uma Pokédex em SwiftUI com busca, detalhe e paginação, aplicando tes
 
 ## 📱 Screenshots
 
-| Catálogo de Pokémons | Detalhes do Pokémon |
-| :---: | :---: |
-| ![Catálogo](Screenshots/list.png) | ![Detalhes](Screenshots/detail.png) |
+| Catálogo de Pokémons | Detalhes do Pokémon | Filtro por Tipo |
+| :---: | :---: | :---: |
+| ![Catálogo](Screenshots/list.png) | ![Detalhes](Screenshots/detail.png) | ![Filtro](Screenshots/filter.png) |
+
 
 ## 🛠️ Tecnologias e Práticas
 - `Swift 5 / 6`
