@@ -14,9 +14,9 @@ O aplicativo permite visualizar eventos com cards interativos, realizar busca em
 
 ## 📱 Screenshots
 
-| Catálogo de Eventos | Detalhes do Evento |
-| :---: | :---: |
-| ![Catálogo de Eventos](Screenshots/list.png) | ![Detalhes do Evento](Screenshots/detail.png) |
+| Catálogo de Eventos | Filtro por Categoria | Detalhes do Evento |
+| :---: | :---: | :---: |
+| ![Catálogo de Eventos](Screenshots/list.png) | ![Filtro por Categoria](Screenshots/search_filter.png) | ![Detalhes do Evento](Screenshots/detail.png) |
 
 ---
 
