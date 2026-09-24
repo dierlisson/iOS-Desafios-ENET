@@ -17,7 +17,14 @@ let package = Package(
         .target(
             name: "SimuladorInvestimentos",
             path: ".",
-            exclude: ["SimuladorInvestimentosTests"],
+            exclude: [
+                "SimuladorInvestimentosTests",
+                "README.md",
+                "VALIDACAO.md",
+                "Screenshots",
+                "SimuladorInvestimentos.xcodeproj",
+                "desafio-ios-simulador-investimentos-detalhe.webp"
+            ],
             sources: [
                 "SimuladorInvestimentosApp.swift",
                 "Models",

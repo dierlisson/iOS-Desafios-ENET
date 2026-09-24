@@ -2,204 +2,119 @@ import SwiftUI
 
 public struct SimulationResultView: View {
     let result: InvestmentResult
-    @ObservedObject private var legacyViewModelWrapper: LegacyWrapper
     private let viewModel: SimulationViewModel
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var showMonths = false
 
     public init(result: InvestmentResult, viewModel: SimulationViewModel) {
         self.result = result
         self.viewModel = viewModel
-        self.legacyViewModelWrapper = LegacyWrapper(viewModel: viewModel)
+    }
+
+    private var annualSummary: [MonthlyBreakdown] {
+        result.breakdown.filter { $0.month.isMultiple(of: 12) || $0.month == result.breakdown.last?.month }
     }
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-
-                // Card Principal: Montante Final
-                VStack(spacing: 8) {
-                    Text("MONTANTE FINAL ESTIMADO")
-                        .font(.caption)
-                        .fontWeight(.heavy)
-                        .foregroundColor(.secondary)
-
+            VStack(spacing: 22) {
+                VStack(spacing: 12) {
+                    Image(systemName: "trophy.fill")
+                        .font(.title).foregroundStyle(Color.investmentTextGreen)
+                        .accessibilityHidden(true)
+                    Text("Valor final acumulado").foregroundStyle(.secondary)
                     Text(CurrencyFormatter.formatCurrency(result.totalAmount))
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundColor(.blue)
-
-                    Text("em \(result.breakdown.count) meses (\(String(format: "%.1f", Double(result.breakdown.count)/12.0)) anos)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.largeTitle.bold())
+                        .multilineTextAlignment(.center)
+                    Text("Após \(result.breakdown.count) meses de investimento")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 24)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.customSecondarySystemGroupedBackground)
-                        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
-                )
-
-                // Grid de Cards Secundários
-                HStack(spacing: 16) {
-                    MetricCard(
-                        title: "Total Investido",
-                        value: CurrencyFormatter.formatCurrency(result.totalInvested),
-                        icon: "wallet.pass.fill",
-                        color: .indigo
-                    )
-
-                    MetricCard(
-                        title: "Lucro em Juros",
-                        value: CurrencyFormatter.formatCurrency(result.totalProfit),
-                        icon: "arrow.up.right.circle.fill",
-                        color: .green
-                    )
+                .investmentCard()
+                let layout = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(spacing: 14)) : AnyLayout(HStackLayout(alignment: .top, spacing: 14))
+                layout {
+                    metric("Total investido", value: result.totalInvested, icon: "banknote.fill", color: .blue)
+                    metric("Lucro obtido", value: result.totalProfit, icon: "chart.line.uptrend.xyaxis", color: .investmentTextGreen)
                 }
-
-                // Barra Proporcional de Composição
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("Composição do Patrimônio")
-                            .font(.headline)
-                        Spacer()
-                        if result.totalAmount > 0 {
-                            Text("\(Int((result.totalProfit / result.totalAmount) * 100))% Juros")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.green)
-                        }
-                    }
-
-                    GeometryReader { geometry in
-                        HStack(spacing: 0) {
-                            let investedRatio = result.totalAmount > 0 ? result.totalInvested / result.totalAmount : 1.0
-                            let profitRatio = result.totalAmount > 0 ? result.totalProfit / result.totalAmount : 0.0
-
-                            Rectangle()
-                                .fill(Color.indigo)
-                                .frame(width: geometry.size.width * CGFloat(investedRatio))
-
-                            Rectangle()
-                                .fill(Color.green)
-                                .frame(width: geometry.size.width * CGFloat(profitRatio))
-                        }
-                        .cornerRadius(8)
-                    }
-                    .frame(height: 16)
-
-                    HStack {
-                        HStack(spacing: 6) {
-                            Circle().fill(Color.indigo).frame(width: 10, height: 10)
-                            Text("Investido (\(CurrencyFormatter.formatCurrency(result.totalInvested)))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        HStack(spacing: 6) {
-                            Circle().fill(Color.green).frame(width: 10, height: 10)
-                            Text("Juros (\(CurrencyFormatter.formatCurrency(result.totalProfit)))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                VStack(alignment: .leading, spacing: 16) {
+                    Label("Resumo por ano", systemImage: "list.bullet.rectangle")
+                        .font(.headline)
+                        .accessibilityAddTraits(.isHeader)
+                    ForEach(annualSummary) { item in
+                        let partial = !item.month.isMultiple(of: 12)
+                        summaryRow(title: "Ano \((item.month + 11) / 12)\(partial ? " · até o mês \(item.month)" : "")", item: item)
+                        if item.id != annualSummary.last?.id { Divider() }
                     }
                 }
-                .padding(16)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.customSecondarySystemGroupedBackground)
-                )
-
-                // Lista Detalhada Mês a Mês
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Evolução Mês a Mês")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 4)
-
-                    LazyVStack(spacing: 10) {
-                        ForEach(result.breakdown.prefix(24)) { item in
-                            HStack {
-                                Text("Mês \(item.month)")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .frame(width: 60, alignment: .leading)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("+ \(CurrencyFormatter.formatCurrency(item.interestEarned)) juros")
-                                        .font(.caption)
-                                        .foregroundColor(.green)
-                                    Text("Acumulado: \(CurrencyFormatter.formatCurrency(item.deposited))")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-
-                                Spacer()
-
-                                Text(CurrencyFormatter.formatCurrency(item.totalBalance))
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.primary)
-                            }
-                            .padding(12)
-                            .background(Color.customSecondarySystemGroupedBackground)
-                            .cornerRadius(12)
-                        }
-
-                        if result.breakdown.count > 24 {
-                            Text("E mais \(result.breakdown.count - 24) meses de evolução...")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .padding(.top, 4)
+                .investmentCard()
+                DisclosureGroup("Evolução mês a mês", isExpanded: $showMonths) {
+                    LazyVStack(alignment: .leading, spacing: 16) {
+                        ForEach(result.breakdown) { item in
+                            summaryRow(title: "Mês \(item.month)", item: item)
+                            if item.id != result.breakdown.last?.id { Divider() }
                         }
                     }
+                    .padding(.top, 16)
                 }
+                .font(.headline)
+                .investmentCard()
+                Button {
+                    viewModel.resetForm()
+                    dismiss()
+                } label: {
+                    Label("Nova simulação", systemImage: "arrow.counterclockwise")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(InvestmentButtonStyle())
+                Text("Valores estimados, sem desconto de impostos, taxas ou inflação.")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
-            .padding(16)
+            .frame(maxWidth: 620)
+            .padding(20)
+            .frame(maxWidth: .infinity)
         }
-        .background(Color.customSystemGroupedBackground.ignoresSafeArea())
-        .navigationTitle("Resultado da Simulação")
+        .background(Color.investmentBackground)
+        .navigationTitle("Resultado da simulação")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
     }
-}
 
-private struct MetricCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                    .font(.headline)
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-            }
-
-            Text(value)
-                .font(.system(.title3, design: .rounded))
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-                .minimumScaleFactor(0.8)
-                .lineLimit(1)
+    private func metric(_ title: String, value: Double, icon: String, color: Color) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: icon).font(.title3).foregroundStyle(color)
+                .padding(12).background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .accessibilityHidden(true)
+            Text(title).font(.subheadline).foregroundStyle(.secondary)
+            Text(CurrencyFormatter.formatCurrency(value))
+                .font(.title3.bold()).foregroundStyle(color)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.customSecondarySystemGroupedBackground)
-        )
+        .investmentCard()
     }
-}
 
-private class LegacyWrapper: ObservableObject {
-    let viewModel: SimulationViewModel
-    init(viewModel: SimulationViewModel) {
-        self.viewModel = viewModel
+    private func summaryRow(title: String, item: MonthlyBreakdown) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text(title).font(.subheadline)
+                    Spacer(minLength: 16)
+                    Text(CurrencyFormatter.formatCurrency(item.totalBalance)).font(.subheadline.bold())
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(title).font(.subheadline)
+                    Text(CurrencyFormatter.formatCurrency(item.totalBalance)).font(.subheadline.bold())
+                }
+            }
+            Text("Investido: \(CurrencyFormatter.formatCurrency(item.deposited))")
+                .font(.caption).foregroundStyle(.secondary)
+            Text("Juros acumulados: \(CurrencyFormatter.formatCurrency(item.totalInterest))")
+                .font(.caption).foregroundStyle(Color.investmentTextGreen)
+        }
+        .accessibilityElement(children: .combine)
     }
 }

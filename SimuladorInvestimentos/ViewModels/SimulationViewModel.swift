@@ -1,25 +1,21 @@
 import Foundation
-import Combine
+import Observation
 
 public enum PeriodType: String, CaseIterable, Identifiable {
     case years = "Anos"
     case months = "Meses"
-
     public var id: String { rawValue }
 }
 
 @Observable
 public final class SimulationViewModel {
-    // MARK: - Input State
-    public var initialAmountString: String = "1000"
-    public var monthlyContributionString: String = "200"
-    public var annualRateString: String = "12"
-    public var periodValueString: String = "5"
-    public var periodType: PeriodType = .years
-
-    // MARK: - Output State
-    public var result: InvestmentResult? = nil
-    public var validationError: String? = nil
+    public var initialAmountString = "1000" { didSet { invalidateResult() } }
+    public var monthlyContributionString = "200" { didSet { invalidateResult() } }
+    public var annualRateString = "12" { didSet { invalidateResult() } }
+    public var periodValueString = "5" { didSet { invalidateResult() } }
+    public var periodType: PeriodType = .years { didSet { invalidateResult() } }
+    public var result: InvestmentResult?
+    public var validationError: String?
 
     private let calculator: InvestmentCalculator
 
@@ -27,82 +23,67 @@ public final class SimulationViewModel {
         self.calculator = calculator
     }
 
-    // MARK: - Derived Properties
-
-    public var parsedInitialAmount: Double? {
-        Double(initialAmountString.replacingOccurrences(of: ",", with: "."))
-    }
-
-    public var parsedMonthlyContribution: Double? {
-        Double(monthlyContributionString.replacingOccurrences(of: ",", with: "."))
-    }
-
-    public var parsedAnnualRate: Double? {
-        Double(annualRateString.replacingOccurrences(of: ",", with: "."))
-    }
-
+    public var parsedInitialAmount: Double? { Self.parseBrazilianNumber(initialAmountString) }
+    public var parsedMonthlyContribution: Double? { Self.parseBrazilianNumber(monthlyContributionString) }
+    public var parsedAnnualRate: Double? { Self.parseBrazilianNumber(annualRateString) }
     public var parsedPeriodValue: Int? {
-        Int(periodValueString)
+        let text = periodValueString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.range(of: "^[0-9]+$", options: .regularExpression) != nil else { return nil }
+        return Int(text)
     }
 
     public var periodInMonths: Int? {
         guard let value = parsedPeriodValue, value > 0 else { return nil }
         switch periodType {
         case .years:
+            guard value <= 50 else { return nil }
             return value * 12
         case .months:
+            guard value <= 600 else { return nil }
             return value
         }
     }
 
-    public var isValid: Bool {
-        guard let initial = parsedInitialAmount, initial >= 0,
-              let monthly = parsedMonthlyContribution, monthly >= 0,
-              let rate = parsedAnnualRate, rate >= 0,
-              let months = periodInMonths, months > 0, months <= 600 else {
-            return false
+    /// The same validation drives the button, inline feedback and calculation.
+    public var inputValidationMessage: String? {
+        guard let initial = parsedInitialAmount, (0...1_000_000_000).contains(initial) else {
+            return "Informe um valor inicial entre R$ 0,00 e R$ 1.000.000.000,00. Use vírgula para centavos."
         }
-        return true
+        guard let monthly = parsedMonthlyContribution, (0...1_000_000_000).contains(monthly) else {
+            return "Informe um aporte mensal entre R$ 0,00 e R$ 1.000.000.000,00. Use vírgula para centavos."
+        }
+        guard let rate = parsedAnnualRate, (0...100).contains(rate) else {
+            return "Informe uma taxa anual entre 0% e 100%. Use vírgula para decimais."
+        }
+        guard periodInMonths != nil else {
+            return periodType == .years
+                ? "Informe um período inteiro de 1 a 50 anos."
+                : "Informe um período inteiro de 1 a 600 meses."
+        }
+        return nil
     }
 
-    // MARK: - Actions
+    public var isValid: Bool { inputValidationMessage == nil }
 
     public func calculateSimulation() {
-        validationError = nil
-
-        guard let initial = parsedInitialAmount, initial >= 0 else {
-            validationError = "Por favor, insira um valor inicial válido (ex: 1000)."
-            return
-        }
-
-        guard let monthly = parsedMonthlyContribution, monthly >= 0 else {
-            validationError = "Por favor, insira um aporte mensal válido (ex: 200)."
-            return
-        }
-
-        guard let rate = parsedAnnualRate, rate >= 0 else {
-            validationError = "Por favor, insira uma taxa de juros anual válida (ex: 12)."
-            return
-        }
-
-        guard let months = periodInMonths, months > 0 else {
-            validationError = "Por favor, insira um período válido maior que zero."
-            return
-        }
-
-        if months > 600 {
-            validationError = "O período máximo permitido é de 50 anos (600 meses)."
-            return
-        }
-
-        let input = InvestmentInput(
+        result = nil
+        validationError = inputValidationMessage
+        guard validationError == nil,
+              let initial = parsedInitialAmount,
+              let monthly = parsedMonthlyContribution,
+              let rate = parsedAnnualRate,
+              let months = periodInMonths else { return }
+        let calculated = calculator.calculate(input: InvestmentInput(
             initialAmount: initial,
             monthlyContribution: monthly,
             annualInterestRate: rate,
             periodInMonths: months
-        )
-
-        self.result = calculator.calculate(input: input)
+        ))
+        guard calculated.totalAmount.isFinite, calculated.breakdown.count == months else {
+            validationError = "Não foi possível calcular esses valores. Revise os parâmetros."
+            return
+        }
+        result = calculated
     }
 
     public func resetForm() {
@@ -113,5 +94,32 @@ public final class SimulationViewModel {
         periodType = .years
         result = nil
         validationError = nil
+    }
+
+    private func invalidateResult() {
+        result = nil
+        validationError = nil
+    }
+
+    public var numberInputHelp: String {
+        "Padrão brasileiro: 1.234,56. Aceita ponto decimal (12.5); grupos de três dígitos usam milhares (1.234 = 1234). Para decimais ambíguos, use vírgula."
+    }
+
+    /// Prioritizes pt-BR grouping, then accepts a single decimal point for
+    /// keyboards in other locales. Rejects malformed groups and partial parses.
+    private static func parseBrazilianNumber(_ value: String) -> Double? {
+        let text = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let pattern = "^(?:[0-9]+|[0-9]{1,3}(?:\\.[0-9]{3})+)(?:,[0-9]+)?$"
+        let normalized: String
+        if text.range(of: pattern, options: .regularExpression) != nil {
+            normalized = text.replacingOccurrences(of: ".", with: "")
+                .replacingOccurrences(of: ",", with: ".")
+        } else if text.range(of: "^[0-9]+\\.[0-9]+$", options: .regularExpression) != nil {
+            normalized = text
+        } else {
+            return nil
+        }
+        guard let number = Double(normalized), number.isFinite else { return nil }
+        return number
     }
 }

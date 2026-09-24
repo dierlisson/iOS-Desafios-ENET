@@ -1,49 +1,52 @@
 import Foundation
 
-/// Motor de cálculo responsável pela simulação de juros compostos.
+/// Projeção com taxa anual efetiva constante e aportes no fim de cada mês.
+/// Não inclui impostos, tarifas ou inflação.
 public struct InvestmentCalculator {
-    
     public init() {}
 
-    /// Realiza a simulação baseada nos parâmetros de entrada.
-    /// - Parameter input: Dados de entrada contendo valor inicial, aporte mensal, taxa anual e período.
-    /// - Returns: Estrutura `InvestmentResult` contendo o montante final, total investido, lucro e extrato mês a mês.
+    /// Entradas inválidas retornam um resultado vazio, preservando o contrato
+    /// público original. A interface apresenta os erros antes de chamar o motor.
     public func calculate(input: InvestmentInput) -> InvestmentResult {
-        guard input.periodInMonths > 0 else {
-            return InvestmentResult(totalAmount: 0, totalInvested: 0, totalProfit: 0, breakdown: [])
+        guard input.initialAmount.isFinite,
+              input.monthlyContribution.isFinite,
+              input.annualInterestRate.isFinite,
+              (0...1_000_000_000).contains(input.initialAmount),
+              (0...1_000_000_000).contains(input.monthlyContribution),
+              (0...100).contains(input.annualInterestRate),
+              (1...600).contains(input.periodInMonths) else {
+            return emptyResult
         }
 
-        // Taxa mensal equivalente a partir da taxa anual (Taxa equivalente composta)
-        let monthlyRate = pow(1.0 + (input.annualInterestRate / 100.0), 1.0 / 12.0) - 1.0
-
-        var currentBalance = max(0, input.initialAmount)
-        var totalDeposited = max(0, input.initialAmount)
-        var totalInterestEarned: Double = 0.0
-        var breakdownList: [MonthlyBreakdown] = []
+        // log1p/expm1 preservam precisão também em taxas muito pequenas.
+        let monthlyRate = expm1(log1p(input.annualInterestRate / 100) / 12)
+        var balance = input.initialAmount
+        var deposits = input.initialAmount
+        var breakdown: [MonthlyBreakdown] = []
+        breakdown.reserveCapacity(input.periodInMonths)
 
         for month in 1...input.periodInMonths {
-            let interestForMonth = currentBalance * monthlyRate
-            totalInterestEarned += interestForMonth
-            currentBalance += interestForMonth + max(0, input.monthlyContribution)
-            totalDeposited += max(0, input.monthlyContribution)
-
-            let entry = MonthlyBreakdown(
+            let interest = balance * monthlyRate
+            balance += interest + input.monthlyContribution
+            deposits += input.monthlyContribution
+            guard balance.isFinite, deposits.isFinite else { return emptyResult }
+            breakdown.append(MonthlyBreakdown(
                 month: month,
-                deposited: totalDeposited,
-                interestEarned: interestForMonth,
-                totalInterest: totalInterestEarned,
-                totalBalance: currentBalance
-            )
-            breakdownList.append(entry)
+                deposited: deposits,
+                interestEarned: interest,
+                totalInterest: max(0, balance - deposits),
+                totalBalance: balance
+            ))
         }
-
-        let profit = currentBalance - totalDeposited
-
         return InvestmentResult(
-            totalAmount: currentBalance,
-            totalInvested: totalDeposited,
-            totalProfit: max(0, profit),
-            breakdown: breakdownList
+            totalAmount: balance,
+            totalInvested: deposits,
+            totalProfit: max(0, balance - deposits),
+            breakdown: breakdown
         )
+    }
+
+    private var emptyResult: InvestmentResult {
+        InvestmentResult(totalAmount: 0, totalInvested: 0, totalProfit: 0, breakdown: [])
     }
 }

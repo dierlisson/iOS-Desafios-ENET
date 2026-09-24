@@ -2,141 +2,122 @@ import SwiftUI
 
 public struct SimulationFormView: View {
     @Bindable var viewModel: SimulationViewModel
-    @State private var navigateToResult: Bool = false
+    @State private var navigateToResult = false
+    @State private var presentedResult: InvestmentResult?
+    @FocusState private var focusedField: Field?
+    private enum Field: Hashable { case initial, monthly, rate, period }
 
-    public init(viewModel: SimulationViewModel) {
-        self.viewModel = viewModel
-    }
+    public init(viewModel: SimulationViewModel) { self.viewModel = viewModel }
 
     public var body: some View {
-        Form {
-            Section {
-                HStack {
-                    Label("Valor Inicial", systemImage: "dollarsign.circle")
-                        .foregroundColor(.blue)
-                    Spacer()
-                    TextField("Ex: 1000", text: $viewModel.initialAmountString)
-                        .decimalPadKeyboard()
-                        .multilineTextAlignment(.trailing)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Configure sua simulação").font(.title2.bold())
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Preencha os dados para calcular sua projeção.")
+                        .foregroundStyle(.secondary)
                 }
-
-                HStack {
-                    Label("Aporte Mensal", systemImage: "calendar.badge.plus")
-                        .foregroundColor(.green)
-                    Spacer()
-                    TextField("Ex: 200", text: $viewModel.monthlyContributionString)
-                        .decimalPadKeyboard()
-                        .multilineTextAlignment(.trailing)
-                }
-            } header: {
-                Text("Valores do Investimento")
-            } footer: {
-                Text("O valor inicial é depositado imediatamente e os aportes são adicionados a cada mês.")
-            }
-
-            Section {
-                HStack {
-                    Label("Taxa Anual (%)", systemImage: "percent")
-                        .foregroundColor(.orange)
-                    Spacer()
-                    TextField("Ex: 12.0", text: $viewModel.annualRateString)
-                        .decimalPadKeyboard()
-                        .multilineTextAlignment(.trailing)
-                }
-
-                HStack {
-                    Label("Período", systemImage: "clock")
-                        .foregroundColor(.purple)
-                    Spacer()
-                    TextField("Ex: 5", text: $viewModel.periodValueString)
-                        .numberPadKeyboard()
-                        .multilineTextAlignment(.trailing)
-                        .frame(width: 80)
-
-                    Picker("Tipo", selection: $viewModel.periodType) {
-                        ForEach(PeriodType.allCases) { type in
-                            Text(type.rawValue).tag(type)
-                        }
+                input("Valor inicial", icon: "dollarsign.circle", color: .investmentTextGreen,
+                      text: $viewModel.initialAmountString, prefix: "R$", suffix: nil,
+                      help: "Valor que você já possui para investir", field: .initial)
+                input("Aporte mensal", icon: "calendar", color: .blue,
+                      text: $viewModel.monthlyContributionString, prefix: "R$", suffix: nil,
+                      help: "Valor depositado ao final de cada mês", field: .monthly)
+                input("Taxa de juros (% ao ano)", icon: "percent", color: .orange,
+                      text: $viewModel.annualRateString, prefix: nil, suffix: "%",
+                      help: "Taxa anual esperada para o investimento", field: .rate)
+                Text(viewModel.numberInputHelp)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 12) {
+                    input("Tempo de investimento", icon: "clock.fill", color: .purple,
+                          text: $viewModel.periodValueString, prefix: nil,
+                          suffix: viewModel.periodType.rawValue.lowercased(),
+                          help: "Período de até 50 anos (600 meses)", field: .period)
+                    Picker("Unidade do período", selection: $viewModel.periodType) {
+                        ForEach(PeriodType.allCases) { Text($0.rawValue).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    .frame(width: 130)
                 }
-            } header: {
-                Text("Rentabilidade e Tempo")
-            } footer: {
-                Text("Taxa de juros anual estimada para o cálculo composto.")
-            }
-
-            if let error = viewModel.validationError {
-                Section {
-                    HStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text(error)
-                            .font(.subheadline)
-                            .foregroundColor(.red)
+                if let error = viewModel.validationError ?? viewModel.inputValidationMessage {
+                    Label(error, systemImage: "exclamationmark.circle.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("simulation.validationError")
+                }
+                Button {
+                    focusedField = nil
+                    viewModel.calculateSimulation()
+                    if viewModel.validationError == nil, let result = viewModel.result {
+                        presentedResult = result
+                        navigateToResult = true
                     }
-                    .padding(.vertical, 4)
+                } label: {
+                    Label("Calcular resultado", systemImage: "chart.line.uptrend.xyaxis")
+                        .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(InvestmentButtonStyle())
+                Text("Projeção com taxa constante, sem desconto de impostos, taxas ou inflação. A rentabilidade real pode variar.")
+                    .font(.footnote).foregroundStyle(.secondary)
             }
-
-            Section {
-                Button(action: handleCalculation) {
-                    HStack {
-                        Spacer()
-                        Text("Calcular Resultado")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        Image(systemName: "calculator")
-                        Spacer()
-                    }
-                    .foregroundColor(.white)
-                    .padding(.vertical, 12)
-                    .background(viewModel.isValid ? Color.blue : Color.gray.opacity(0.5))
-                    .cornerRadius(12)
-                }
-                .disabled(!viewModel.isValid)
-                .listRowInsets(EdgeInsets())
-            }
+            .frame(maxWidth: 620)
+            .padding(24)
+            .frame(maxWidth: .infinity)
         }
-        .navigationTitle("Parâmetros")
+        .scrollDismissesKeyboard(.interactively)
+        .background(Color.investmentBackground)
+        .navigationTitle("Simulação")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            #if os(iOS)
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Redefinir") {
-                    viewModel.resetForm()
-                }
-                .foregroundColor(.red)
-            }
-            #else
             ToolbarItem(placement: .primaryAction) {
-                Button("Redefinir") {
-                    viewModel.resetForm()
-                }
-                .foregroundColor(.red)
+                Button("Redefinir") { focusedField = nil; viewModel.resetForm() }
+            }
+            #if os(iOS)
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Concluir") { focusedField = nil }
             }
             #endif
         }
         .navigationDestination(isPresented: $navigateToResult) {
-            if let result = viewModel.result {
+            if let result = presentedResult {
                 SimulationResultView(result: result, viewModel: viewModel)
             }
         }
     }
 
-    private func handleCalculation() {
-        viewModel.calculateSimulation()
-        if viewModel.result != nil {
-            navigateToResult = true
+    private func input(_ title: String, icon: String, color: Color, text: Binding<String>,
+                       prefix: String?, suffix: String?, help: String, field: Field) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label { Text(title).foregroundStyle(.primary) } icon: {
+                Image(systemName: icon).foregroundStyle(color)
+            }
+            .font(.subheadline.weight(.semibold))
+            HStack(spacing: 12) {
+                if let prefix { Text(prefix).foregroundStyle(.secondary) }
+                Group {
+                    if field == .period {
+                        TextField("5", text: text).numberPadKeyboard()
+                    } else {
+                        TextField("0,00", text: text).decimalPadKeyboard()
+                    }
+                }
+                .focused($focusedField, equals: field)
+                .accessibilityLabel(title)
+                .accessibilityHint(help)
+                .accessibilityIdentifier("simulation.\(field)")
+                if let suffix { Text(suffix).foregroundStyle(.secondary) }
+            }
+            .padding(16)
+            .background(Color.customSecondarySystemGroupedBackground, in: RoundedRectangle(cornerRadius: 13))
+            .overlay(RoundedRectangle(cornerRadius: 13)
+                .stroke(focusedField == field ? Color.investmentTextGreen : Color.primary.opacity(0.12), lineWidth: 1))
+            Text(help).font(.caption).foregroundStyle(.secondary)
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        SimulationFormView(viewModel: SimulationViewModel())
     }
 }
