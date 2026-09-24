@@ -1,5 +1,4 @@
 import SwiftUI
-import Pokedex
 
 @main
 struct PokedexApp: App {

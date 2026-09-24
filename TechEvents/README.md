@@ -7,6 +7,12 @@ Aplicativo em SwiftUI com arquitetura em camadas, filtros avançados e estado re
 ## 🎯 Objetivo
 Consolidar arquitetura do app em Swift com casos de uso, repositório e apresentação SwiftUI desacoplada.
 
+## 📱 Screenshots
+
+| Catálogo de Eventos | Detalhes & Programação | Filtros Compostos |
+| :---: | :---: | :---: |
+| ![Catálogo](Screenshots/catalog.png) | ![Detalhes](Screenshots/detail.png) | ![Filtros](Screenshots/filter.png) |
+
 ## 🛠️ Tecnologias e Práticas
 - `Swift 5 / 6`
 - `SwiftUI`
@@ -31,6 +37,7 @@ Consolidar arquitetura do app em Swift com casos de uso, repositório e apresent
 ### Estrutura de Pastas
 ```
 TechEvents/
+├── Screenshots/         # Screenshots do aplicativo executado no iOS Simulator
 ├── Sources/TechEvents/
 │   ├── Domain/
 │   │   ├── Models/ (TechEvent, EventFormat, EventModality, Speaker, ScheduleSlot)

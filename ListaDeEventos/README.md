@@ -12,6 +12,14 @@ O aplicativo permite visualizar eventos com cards interativos, realizar busca em
 
 ---
 
+## 📱 Screenshots
+
+| Catálogo de Eventos | Detalhes do Evento |
+| :---: | :---: |
+| ![Catálogo de Eventos](Screenshots/list.png) | ![Detalhes do Evento](Screenshots/detail.png) |
+
+---
+
 ## 🛠️ Tecnologias e Arquitetura
 
 - **Linguagem & Framework**: Swift, SwiftUI
@@ -52,6 +60,7 @@ O aplicativo permite visualizar eventos com cards interativos, realizar busca em
 
 ```
 ListaDeEventos/
+├── Screenshots/         # Screenshots do aplicativo executado no iOS Simulator
 ├── Models/              # Modelo Event, EventCategory e SortOption
 ├── Services/            # Service protocol e provedor de eventos sample
 ├── ViewModels/          # EventsViewModel com filtragem, busca e favoritos

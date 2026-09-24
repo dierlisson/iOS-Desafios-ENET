@@ -42,8 +42,9 @@ Os três testes de cálculo existentes podem ser executados pelo terminal com `s
 
 O app usa a composição verde e os cards claros da referência. O formulário e o relatório mensal se ajustam à largura disponível e ao tamanho dinâmico do texto. A UI usa cores adaptativas para melhorar o contraste no modo escuro.
 
-## Screenshot
+## Screenshots
 
-![Boas-vindas no iPhone 18 Pro](Screenshots/welcome.png)
+| Tela Inicial (Boas-Vindas) | Formulário de Simulação | Resultado da Simulação |
+| :---: | :---: | :---: |
+| ![Boas-Vindas](Screenshots/welcome.png) | ![Formulário](Screenshots/form.png) | ![Resultado](Screenshots/result.png) |
 
-![Boas-vindas em modo escuro](Screenshots/welcome-dark.png)

@@ -7,6 +7,12 @@ Projeto final em SwiftUI com API real (PokéAPI), paginação incremental e foco
 ## 🎯 Objetivo
 Entregar uma Pokédex em SwiftUI com busca, detalhe e paginação, aplicando testes unitários e organização de código.
 
+## 📱 Screenshots
+
+| Catálogo de Pokémons | Detalhes do Pokémon |
+| :---: | :---: |
+| ![Catálogo](Screenshots/list.png) | ![Detalhes](Screenshots/detail.png) |
+
 ## 🛠️ Tecnologias e Práticas
 - `Swift 5 / 6`
 - `SwiftUI`
@@ -32,6 +38,7 @@ Entregar uma Pokédex em SwiftUI com busca, detalhe e paginação, aplicando tes
 ### Estrutura de Pastas
 ```
 Pokedex/
+├── Screenshots/         # Screenshots do aplicativo executado no iOS Simulator
 ├── Sources/Pokedex/
 │   ├── Domain/
 │   │   └── Models/ (Pokemon, PokemonDetail, PokemonType, PokemonStat)

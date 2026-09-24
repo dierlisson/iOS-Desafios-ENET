@@ -12,6 +12,14 @@ O aplicativo permite ao usuário registrar transações de entradas (receitas) e
 
 ---
 
+## 📱 Screenshots
+
+| Dashboard Financeiro | Novo Lançamento |
+| :---: | :---: |
+| ![Dashboard Financeiro](Screenshots/dashboard.png) | ![Novo Lançamento](Screenshots/add_transaction.png) |
+
+---
+
 ## 🛠️ Tecnologias e Arquitetura
 
 - **Linguagem & Framework**: Swift, SwiftUI
@@ -50,6 +58,7 @@ O aplicativo permite ao usuário registrar transações de entradas (receitas) e
 
 ```
 ControleFinanceiro/
+├── Screenshots/                # Screenshots do aplicativo executado no iOS Simulator
 ├── Models/                     # FinancialTransaction (@Model), TransactionCategory, TransactionType
 ├── Views/                      # FinanceDashboardView, AddTransactionView, TransactionRowView
 ├── Utilities/                  # CurrencyFormatter, Color+Extensions

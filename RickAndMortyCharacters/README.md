@@ -12,6 +12,14 @@ O aplicativo permite explorar todos os personagens da franquia Rick & Morty cons
 
 ---
 
+## 📱 Screenshots
+
+| Lista de Personagens | Detalhes do Personagem |
+| :---: | :---: |
+| ![Lista de Personagens](Screenshots/list.png) | ![Detalhes do Personagem](Screenshots/detail.png) |
+
+---
+
 ## 🛠️ Tecnologias e Arquitetura
 
 - **Linguagem & Framework**: Swift, SwiftUI
@@ -51,6 +59,7 @@ O aplicativo permite explorar todos os personagens da franquia Rick & Morty cons
 
 ```
 RickAndMortyCharacters/
+├── Screenshots/                   # Screenshots do aplicativo executado no iOS Simulator
 ├── Models/                        # RMCharacter, RMStatus, RMLocationRef, RMPageInfo, RMCharacterResponse
 ├── Services/                      # RickAndMortyService, NetworkError
 ├── ViewModels/                    # CharactersViewModel (busca com debounce, paginação)
