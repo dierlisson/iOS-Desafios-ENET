@@ -28,17 +28,17 @@ public enum MockEventsData {
                         id: "speaker-2",
                         name: "Lucas Mendes",
                         role: "Principal Tech Lead",
-                        company: "Fintech Mobile",
-                        bio: "Entusiasta de arquitetura limpa e testes automatizados no ecossistema iOS."
+                        company: "Mobile Scale Inc.",
+                        bio: "Especialista em microsserviços, CI/CD e automação com Xcode Cloud."
                     )
                 ],
                 schedule: [
                     ScheduleSlot(
                         id: "slot-1",
-                        title: "Abertura & Keynote: O Futuro do Swift 6",
-                        description: "Visão geral sobre strict concurrency checking e novas APIs do iOS 18+.",
+                        title: "Keynote: O Futuro do Desenvolvedor Swift em 2026",
+                        description: "Visão geral das principais inovações na linguagem Swift e plataformas Apple.",
                         startTime: "09:00",
-                        endTime: "10:15",
+                        endTime: "10:30",
                         room: "Auditório Principal",
                         speaker: Speaker(
                             id: "speaker-1",
@@ -49,16 +49,16 @@ public enum MockEventsData {
                     ),
                     ScheduleSlot(
                         id: "slot-2",
-                        title: "Arquitetura Modular em Apps de Grande Porte",
-                        description: "Estratégias de desacoplamento de código e Swift Package Manager.",
-                        startTime: "10:45",
-                        endTime: "12:00",
-                        room: "Sala Swift 01",
+                        title: "Escalando Apps iOS com Modularização",
+                        description: "Como dividir monólitos em Swift Packages independentes e testáveis.",
+                        startTime: "11:00",
+                        endTime: "12:30",
+                        room: "Sala 02",
                         speaker: Speaker(
                             id: "speaker-2",
                             name: "Lucas Mendes",
                             role: "Principal Tech Lead",
-                            company: "Fintech Mobile"
+                            company: "Mobile Scale Inc."
                         )
                     )
                 ],
@@ -66,7 +66,7 @@ public enum MockEventsData {
             ),
             TechEvent(
                 id: "event-2",
-                title: "SwiftUI Advanced Masterclass",
+                title: "SwiftUI Masterclass & Animations",
                 summary: "Workshop prático online sobre animações complexas e estado reativo com @Observable.",
                 fullDescription: "Aprenda a construir UIs de nível mundial com custom layouts, phase animators e integração profunda com a macro @Observable do Swift 5.9+.",
                 date: Date().addingTimeInterval(86400 * 5),
@@ -225,5 +225,46 @@ public enum MockEventsData {
                 isBookmarked: false
             )
         ]
+    }
+}
+
+// MARK: - Test Mock Helpers
+
+extension TechEvent {
+    /// Helper estático para gerar eventos mock em testes unitários e Previews SwiftUI.
+    public static func mock(
+        id: String = "mock-event-1",
+        title: String = "Evento de Teste Swift",
+        summary: String = "Descrição rápida de teste para o evento tech.",
+        fullDescription: String = "Descrição detalhada do evento de teste cobrindo todas as informações de palestrantes e trilha.",
+        date: Date = Date(),
+        dateFormatted: String = "24 de Setembro de 2026 • 14:00",
+        location: String = "São Paulo, SP - Brasil",
+        format: EventFormat = .presencial,
+        modality: EventModality = .conference,
+        isFree: Bool = true,
+        price: Double? = 0.0,
+        bannerUrl: String? = nil,
+        speakers: [Speaker] = [],
+        schedule: [ScheduleSlot] = [],
+        isBookmarked: Bool = false
+    ) -> TechEvent {
+        TechEvent(
+            id: id,
+            title: title,
+            summary: summary,
+            fullDescription: fullDescription,
+            date: date,
+            dateFormatted: dateFormatted,
+            location: location,
+            format: format,
+            modality: modality,
+            isFree: isFree,
+            price: price,
+            bannerUrl: bannerUrl,
+            speakers: speakers,
+            schedule: schedule,
+            isBookmarked: isBookmarked
+        )
     }
 }
